@@ -29,6 +29,7 @@
 
     <title>Nobody.live | Lonely streams and streamers with zero viewers</title>
     <link rel="stylesheet" href="styles.css" type="text/css">
+    <link rel="stylesheet" href="modal.css" type="text/css">
   </head>
   <body>
     <div id="motd"></div>
@@ -39,7 +40,7 @@
       </div>
       <div class="right-pane">
         <button id="new-streamer-button" disabled>please wait...</button><br />
-        <button class="fake-link filter" id="filter">click to filter</button>
+        <button class="fake-link filter" id="filter" data-micromodal-trigger="modal-1">click to filter</button>
       </div>
     </div>
     <div id="twitch-embed-wrapper" class="container">
@@ -65,7 +66,29 @@
       this site is free, and ad-free, forever; <a href="https://ko-fi.com/jackkingsman" target="_blank" rel="noopener">donations to help offset server costs</a> are much appreciated :)
     </div>
 
+    <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+      <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+        <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+          <header class="modal__header">
+            <h2 class="modal__title" id="modal-1-title">
+              Filter Streams
+            </h2>
+            <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+          </header>
+          <main class="modal__content" id="modal-1-content">
+            <p>
+              Include or exclude streamers from certain games and categories here. In "exclude" mode, checked games will <strong>not</strong> be shown. In "include" mode, <strong>only</strong> the checked games will be shown.
+            </p>
+          </main>
+          <footer class="modal__footer">
+            <button class="modal__btn modal__btn-primary" data-micromodal-close aria-label="Save options">Save Filter</button>
+          </footer>
+        </div>
+      </div>
+    </div>
+
     <script src="https://embed.twitch.tv/embed/v1.js"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
     <script type="text/javascript">
       let numberOfThumbnailsToFetch = 12;
       let server = document.location.origin;
@@ -140,10 +163,10 @@
         // empty any possible old thumbs
         container.innerHTML = '';
 
-        let thumbsEndpoint = `${server}/streams/${thumbs}`;
-        if (streamFilter) {
-          thumbsEndpoint = `${server}/searchstreams/${streamFilter}/${thumbs}`;
-        }
+        let thumbsEndpoint = `${server}/stream?count=${thumbs}`;
+        // if (streamFilter) {
+        //   thumbsEndpoint = `${server}/searchstreams/${streamFilter}/${thumbs}`;
+        // }
         let thumbs_response = await fetch(thumbsEndpoint);
         let thumbs_json = await thumbs_response.json()
 
@@ -206,7 +229,7 @@
 
         // refresh stats bar once a second
         setInterval(async () => {
-          let stats_response = await fetch(`${server}/stats.json`);
+          let stats_response = await fetch(`${server}/stats`);
           let stats_json = await stats_response.json();
           let minutes = Math.floor((Math.round(new Date().getTime() / 1000  - currentStream.fetched)) / 60);
 
@@ -225,18 +248,6 @@
 
       document.getElementById('dev-mode').addEventListener('click', enterDevMode);
       document.getElementById('new-streamer-button').addEventListener('click', fetchAndRenderRandomStream);
-      document.getElementById('filter').addEventListener('click', () => {
-        streamFilter = prompt("Enter a game or category to filter games on (e.g. 'just chatting' or 'dead by daylight')", streamFilter).toLowerCase();
-
-        let newThumbText = streamFilter ? `Refresh thumbnails (${streamFilter})` : 'Refresh thumbnails';
-        document.querySelectorAll('.new-thumbnails').forEach((button) => button.innerText = newThumbText);
-
-        let filterButtonText = streamFilter ? `filter active` : 'click to filter';
-        document.querySelector('#filter').innerText = filterButtonText;
-
-        fetchAndRenderRandomStream();
-        fetchAndRenderThumbnails();
-      });
       document.querySelectorAll('.new-thumbnails').forEach((button) => button.addEventListener('click', fetchAndRenderThumbnails));
 
       // if we have /?stream=... then render the specified stream
@@ -252,6 +263,7 @@
 
       fetchAndRenderThumbnails();
       fetchAndRenderMOTD();
+      MicroModal.init();
     </script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-7JF3B0HFYJ"></script>
     <script>

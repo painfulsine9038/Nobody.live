@@ -12,7 +12,7 @@ import sys
 import db_utils
 cursor = db_utils.get_cursor()
 
-from flask import Flask, jsonify, json
+from flask import Flask, jsonify, json, request
 app = Flask(__name__, static_url_path='', static_folder='static')
 app.config['JSON_AS_ASCII'] = False
 
@@ -46,26 +46,22 @@ def root():
     return app.send_static_file('index.html')
 
 @app.route('/stream')
-def get_stream():
-    stream = db_utils.get_n_games(cursor, 1)
-    return jsonify(json.loads(stream[0][0]))
+def get_streams():
+    count = request.args.get('count', default=1, type=int)
+    filter_type = request.args.get('filter_type', default='exclude', type=str)
+    filter_games = request.args.get('filter_games', default='', type=str)
 
-@app.route('/searchstream/<game>')
-def get_single_game_stream(game):
-    stream = db_utils.get_n_games_filter_game(cursor, 1, game)
-    return jsonify(json.loads(stream[0][0]))
+    # do a moderate approximation of not falling over
+    if len(filter_games) > 500 or count > 64:
+        return ('Filter too large! Please select fewer games or request fewer records.', 413)
 
-@app.route('/streams/<count>')
-def get_streams_endpoint(count):
-    streams = db_utils.get_n_games(cursor, min(int(count), 60))
-    return jsonify([json.loads(stream[0]) for stream in streams])
+    parsed_games = filter_games.split(',')
+    streams = db_utils.get_games(cursor, count, filter_type, parsed_games)
 
-@app.route('/searchstreams/<game>/<count>')
-def get_single_game_streams(game, count):
-    streams = db_utils.get_n_games_filter_game(cursor, min(int(count), 60), game)
-    return jsonify([json.loads(stream[0]) for stream in streams])
+    extracted_streams = [json.loads(stream[0]) for stream in streams]
+    return jsonify(extracted_streams if len(extracted_streams) > 1 else extracted_streams[0])
 
-@app.route('/stats.json')
+@app.route('/stats')
 def get_stats_json():
     stats = (db_utils.get_stats())
     stats['load'] = get_sys_load()
@@ -73,17 +69,11 @@ def get_stats_json():
 
     return jsonify(stats)
 
-@app.route('/games_by_stream.json')
+@app.route('/games_by_stream')
 @cache(ttl=datetime.timedelta(seconds=30))
 def get_games_streamers():
     games = [{'game': game[0], 'streamers': game[1]} for game in db_utils.get_games_list_by_game(cursor)]
     return jsonify(sorted(games, key=lambda game: game['streamers'], reverse=True))
-
-@app.route('/games_by_lang.json')
-@cache(ttl=datetime.timedelta(seconds=30))
-def get_games_lang():
-    langs = [{'lang': lang[0], 'streamers': lang[1]} for lang in db_utils.get_games_list_by_lang(cursor)]
-    return jsonify(sorted(langs, key=lambda lang: lang['streamers'], reverse=True))
 
 @app.route('/motd')
 @cache(ttl=datetime.timedelta(minutes=1))
