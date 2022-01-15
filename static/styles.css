@@ -105,7 +105,14 @@ a,
     font-size: 1.5em;
   }
 }
+button {
+  transition: -webkit-transform 0.25s ease-out;
+  transition: transform 0.25s ease-out;
+  transition: transform 0.25s ease-out, -webkit-transform 0.25s ease-out;
 
+  border-radius: 3pt;
+  transition: 0.3s;
+}
 #new-streamer-button {
   background-color: #008a07;
   border: none;
@@ -117,6 +124,12 @@ a,
   font-size: 16px;
   width: 100%;
   cursor: pointer;
+}
+#new-streamer-button:hover:enabled {
+  background-color: #125e16;
+  box-shadow: 3px 3px 14px 5px rgba(0, 0, 0, 0.18);
+  -webkit-transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 #new-streamer-button:disabled,
@@ -186,7 +199,8 @@ a,
     margin: auto;
   }
 
-  .skinny #twitch-embed, .skinny #twitch-embed > iframe {
+  .skinny #twitch-embed,
+  .skinny #twitch-embed > iframe {
     min-height: 60vh;
   }
 }
