@@ -1,4 +1,6 @@
 # nodbody.live
+## PainfulSines Notes
+This fork is just me experementing with CSS grids, as they are new to me, if you are intrested in seeing that then checkout the css grid branch, this branch probily will have almost no furthure work done on it unless I feel the need to push the changes...
 
 ## Architecture
 
