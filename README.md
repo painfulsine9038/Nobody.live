@@ -2,6 +2,9 @@
 ## PainfulSines Notes
 This fork is just me experementing with CSS grids, as they are new to me, if you are intrested in seeing that then checkout the css grid branch, this branch probily will have almost no furthure work done on it unless I feel the need to push the changes...
 
+# SCSS?
+Yes, I love scss, and some people disagree because it is compiled, but with the use of a live compiler it is easy to get started in, I reccomend this [Live Sass Compiler for vscode](https://github.com/glenn2223/vscode-live-sass-compiler/), it is the one I use all the time and it is easy to get working in VSCode
+
 ## Architecture
 
 A worker script (`scanner.py`) loops through the Twitch API's list of streams and spins until it inserts all streamers it finds matching the search criteria (default zero viewers), then it starts again. These streamers are pruned after a set number of seconds (`SECONDS_BEFORE_RECORD_EXPIRATION`) on the assumption that someone will view them and then they won't have zero viewers any more so should not be served for too long.
